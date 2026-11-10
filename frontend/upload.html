@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Document</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav>
+    <h2>SmartVerify</h2>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="upload.html">Upload Document</a>
+    <a href="verify.html">Verify</a>
+</nav>
+
+<div class="container">
+    <h1>Upload Your Document</h1>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+
+        <label>Document Name</label>
+        <input type="text" name="document_name" required>
+
+        <label>Document Type</label>
+        <select name="document_type" required>
+            <option value="">Select Type</option>
+            <option value="Aadhaar">Aadhaar</option>
+            <option value="PAN">PAN Card</option>
+            <option value="Marksheet">Marksheet</option>
+            <option value="Certificate">Certificate</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <label>Upload File</label>
+        <input type="file" name="document"
+               accept=".pdf,.jpg,.jpeg,.png" required>
+
+        <button type="submit">Submit Document</button>
+    </form>
+
+    <p id="uploadMessage"></p>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
