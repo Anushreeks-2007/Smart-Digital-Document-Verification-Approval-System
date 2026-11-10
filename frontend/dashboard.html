@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav>
+    <h2>SmartVerify</h2>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="upload.html">Upload Document</a>
+    <a href="verify.html">Verify Document</a>
+    <button onclick="logout()">Logout</button>
+</nav>
+
+<div class="container">
+    <h1>Welcome to Your Dashboard</h1>
+    <p>Track your submitted documents here.</p>
+
+    <div class="cards">
+        <div class="card">
+            <h3>Total Documents</h3>
+            <h1 id="total">0</h1>
+        </div>
+
+        <div class="card">
+            <h3>Pending</h3>
+            <h1 id="pending">0</h1>
+        </div>
+
+        <div class="card">
+            <h3>Approved</h3>
+            <h1 id="approved">0</h1>
+        </div>
+
+        <div class="card">
+            <h3>Rejected</h3>
+            <h1 id="rejected">0</h1>
+        </div>
+    </div>
+
+    <h2>My Documents</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Document Name</th>
+                <th>Type</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="documentList">
+        </tbody>
+    </table>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
