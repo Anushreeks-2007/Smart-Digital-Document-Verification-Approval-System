@@ -4,11 +4,13 @@ try:
     from .text_matching import compare_items
     from .image_matching import compare_images
     from .metadata_matching import calculate_metadata_score
+    from .category_prediction import predict_category
 
 except ImportError:
     from text_matching import compare_items
     from image_matching import compare_images
     from metadata_matching import calculate_metadata_score
+    from category_prediction import predict_category
 
 
 # STEP 1: Calculate combined matching score
@@ -32,11 +34,25 @@ def calculate_combined_score(text_score, image_score, metadata_score):
 
 
 # STEP 2: Compare lost item with found items
+
 def find_best_matches(lost_item, found_items):
+
+    lost_item = lost_item.copy()
+
+    if not lost_item.get("category"):
+        lost_item["category"] = predict_category(
+            lost_item["description"]
+        )
 
     results = []
 
     for found_item in found_items:
+        found_item = found_item.copy()
+
+        if not found_item.get("category"):
+            found_item["category"] = predict_category(
+                found_item["description"]
+            )
 
         # Text matching
         text_score, text_result = compare_items(

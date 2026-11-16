@@ -1,26 +1,44 @@
 # AI-Based Lost and Found Matching Module
 
-## Overview
-This module identifies and ranks possible matches between lost and found item reports using text similarity, image similarity and metadata comparison.
+## 1. Overview
 
-## Features
-1. Text similarity using TF-IDF and cosine similarity.
-2. Image similarity using MobileNetV2.
-3. Metadata comparison using category, colour, location and date.
-4. Combined weighted matching score.
-5. Automatic ranking of possible matches.
-6. Duplicate report detection.
-7. Match-result classification.
-8. Handling of missing and invalid image paths.
+This module identifies and ranks possible matches between lost and found item reports using AI-based text matching, image similarity, metadata comparison and automatic category prediction.
 
-## Technologies
+It helps users and administrators find potentially matching belongings more efficiently.
+
+## 2. Features
+
+1. **Text Similarity:** Uses TF-IDF and cosine similarity to compare item descriptions.
+2. **Image Similarity:** Uses pretrained MobileNetV2 to extract image features and compare visual similarity.
+3. **Metadata Matching:** Compares category, colour, location and date.
+4. **Combined AI Matching:** Calculates a weighted score using text, image and metadata similarity.
+5. **Automatic Category Prediction:** Uses TF-IDF and Logistic Regression to predict item categories from descriptions when a category is missing.
+6. **Duplicate Detection:** Identifies potentially similar lost and found reports.
+7. **Match Ranking:** Ranks possible matches from highest to lowest score.
+8. **Missing Image Handling:** Continues matching when images are unavailable or invalid.
+
+## 3. Technologies Used
+
 - Python
 - Scikit-learn
 - PyTorch
 - Torchvision
+- OpenCV
 - Pillow
+- NumPy
+- Pandas
 
-## Main Integration Function
+## 4. AI Components
+
+| Component | Technique |
+|---|---|
+| Text Matching | TF-IDF and Cosine Similarity |
+| Image Matching | MobileNetV2 |
+| Metadata Matching | Weighted Attribute Comparison |
+| Category Prediction | TF-IDF and Logistic Regression |
+| Duplicate Detection | TF-IDF and Cosine Similarity |
+
+## 5. Main Integration Function
 
 Import the matching function into the Flask backend:
 
@@ -34,26 +52,26 @@ Call the function:
 results = find_best_matches(lost_item, found_items)
 ```
 
-## Required Input Format
+## 6. Required Input Format
 
-Each item must contain:
+Each item should contain:
 
 | Field | Description |
 |---|---|
 | description | Item description |
-| category | Item category |
+| category | Item category (optional; predicted if missing) |
 | colour | Item colour |
 | location | Item location |
 | date | Date in YYYY-MM-DD format |
 | image | Image file path or None |
 
-Both `lost_item` and every entry in `found_items` must follow this format.
+Both `lost_item` and every entry in `found_items` should follow this format.
 
-Image paths must point to accessible image files. If an image is unavailable, use `None`.
+If an image is unavailable, use `None`.
 
-## Output
+## 7. Output
 
-The function returns a list of ranked matching results containing:
+The function returns ranked matching results containing:
 
 - found_item
 - text_score
@@ -62,13 +80,17 @@ The function returns a list of ranked matching results containing:
 - final_score
 - match_status
 
-## Match Classification
+## 8. Match Classification
 
 - 50% or above: High-Priority Candidate
 - 30%–49.99%: Needs Manual Review
 - Below 30%: Low-Priority Candidate
 
-These classifications are preliminary matching priorities, not probabilities of ownership.
+These classifications represent preliminary matching priorities, not probabilities of ownership.
 
-## Important Note
-AI matching only identifies possible matches. Final ownership verification and item handover must be handled by an authorised administrator.
+## 9. Important Notes
+
+- Category prediction uses a sample training dataset and is a prototype. Prediction quality depends on the training data.
+- Image similarity uses general pretrained visual features and does not establish that two images show the same physical object.
+- Missing images are handled by redistributing the image matching weight.
+- AI matching only identifies possible matches. Final ownership verification and item handover must be handled by an authorised administrator.
