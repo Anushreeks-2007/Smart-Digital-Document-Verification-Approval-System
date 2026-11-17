@@ -22,10 +22,12 @@ def create_app():
     from app.routes.auth_routes import auth
     from app.routes.item_routes import items
     from app.routes.matching_routes import matching
+    from app.routes.workflow_routes import workflow
 
     app.register_blueprint(main)
     app.register_blueprint(auth)
     app.register_blueprint(items)
     app.register_blueprint(matching)
+    app.register_blueprint(workflow)
 
     return app
