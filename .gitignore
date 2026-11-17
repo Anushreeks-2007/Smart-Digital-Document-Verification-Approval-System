@@ -1,21 +1,33 @@
-# Python cache
+# Python cache files
 __pycache__/
 *.py[cod]
+*.pyo
 
 # Virtual environments
 .venv/
 venv/
 
-# Pytest cache
-.pytest_cache/
-
 # Environment variables
 .env
+.env.*
+
+# IDE files
+.vscode/
+.idea/
+
+# Pytest and testing cache
+.pytest_cache/
+.coverage
+htmlcov/
 
 # SQLite database files
 *.db
+*.sqlite
 *.sqlite3
 
 # Uploaded files
 uploads/*
 !uploads/.gitkeep
+
+# Temporary test images
+downloaded_test.jpg

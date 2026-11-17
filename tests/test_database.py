@@ -1,16 +1,24 @@
 import sqlite3
 from pathlib import Path
+
 import pytest
 
 SCHEMA = Path("database/schema.sql")
+
 
 @pytest.fixture
 def db(tmp_path):
     conn = sqlite3.connect(tmp_path / "test.db")
     conn.execute("PRAGMA foreign_keys = ON")
-    conn.executescript(SCHEMA.read_text(encoding="utf-8"))
+
+    conn.executescript(
+        SCHEMA.read_text(encoding="utf-8")
+    )
+
     yield conn
+
     conn.close()
+
 
 def test_tables_created(db):
     tables = db.execute(
@@ -25,6 +33,7 @@ def test_tables_created(db):
     assert "notifications" in table_names
     assert "recovery_history" in table_names
 
+
 def test_user_insertion(db):
     db.execute(
         "INSERT INTO users(name,email,password_hash) VALUES(?,?,?)",
@@ -38,6 +47,7 @@ def test_user_insertion(db):
 
     assert user is not None
     assert user[1] == "Test User"
+
 
 def test_item_insertion(db):
     db.execute(
@@ -58,6 +68,7 @@ def test_item_insertion(db):
 
     assert item[0] == "Black Wallet"
 
+
 def test_duplicate_email_rejected(db):
     db.execute(
         "INSERT INTO users(name,email,password_hash) VALUES(?,?,?)",
@@ -69,6 +80,7 @@ def test_duplicate_email_rejected(db):
             "INSERT INTO users(name,email,password_hash) VALUES(?,?,?)",
             ("User Two", "same@example.com", "hash")
         )
+
 
 def test_invalid_user_reference_rejected(db):
     with pytest.raises(sqlite3.IntegrityError):
