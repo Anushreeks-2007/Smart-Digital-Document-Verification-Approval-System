@@ -16,7 +16,7 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
-    CORS(app)
+    CORS(app, supports_credentials=True)
 
     from app.routes.main_routes import main
     from app.routes.auth_routes import auth
