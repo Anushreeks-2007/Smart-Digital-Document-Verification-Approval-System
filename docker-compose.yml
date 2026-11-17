@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    container_name: lost-found-app
+    ports:
+      - "5000:5000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-development-key-change-before-release}
+    volumes:
+      - ./database:/app/database
+      - ./uploads:/app/uploads
+    restart: unless-stopped
