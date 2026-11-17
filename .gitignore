@@ -1,0 +1,30 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+venv/
+.env
+.env.*
+
+# IDE files
+.vscode/
+.idea/
+
+# Local database
+database/*.db
+database/*.sqlite
+database/*.sqlite3
+
+# Uploaded test files
+uploads/*
+!uploads/.gitkeep
+
+# Temporary test images
+downloaded_test.jpg
+
+# Python testing
+.pytest_cache/
+.coverage
+htmlcov/

@@ -21,9 +21,11 @@ def create_app():
     from app.routes.main_routes import main
     from app.routes.auth_routes import auth
     from app.routes.item_routes import items
+    from app.routes.matching_routes import matching
 
     app.register_blueprint(main)
     app.register_blueprint(auth)
     app.register_blueprint(items)
+    app.register_blueprint(matching)
 
     return app
