@@ -1,14 +1,12 @@
 
-from flask import Blueprint, request, jsonify, session, current_app
-import sqlite3
+from flask import Blueprint, request, jsonify, session
+from database.db import get_db_connection
 
 member4 = Blueprint("member4", __name__)
 
 
 def get_db():
-    db = sqlite3.connect(current_app.config["DATABASE"])
-    db.row_factory = sqlite3.Row
-    return db
+    return get_db_connection()
 
 
 def login_required():
@@ -29,7 +27,7 @@ def submit_claim():
     data = request.get_json(silent=True) or {}
 
     item_id = data.get("item_id")
-    details = data.get("identifying_details", "").strip()
+    details = data.get("claim_description", "").strip()
 
     if not item_id or not details:
         return jsonify({"error": "Required fields missing"}), 400
@@ -41,16 +39,22 @@ def submit_claim():
 
     try:
         item = db.execute(
-            "SELECT id FROM items WHERE id = ?",
+            "SELECT id, user_id, status FROM items WHERE id = ?",
             (item_id,)
         ).fetchone()
 
         if not item:
             return jsonify({"error": "Item not found"}), 404
 
+        if item["user_id"] == session["user_id"]:
+            return jsonify({"error": "You cannot claim your own item"}), 400
+
+        if item["status"].lower() != "active":
+            return jsonify({"error": "Item is not available"}), 400
+
         result = db.execute("""
             INSERT INTO claims
-            (item_id, user_id, identifying_details)
+            (item_id, user_id, claim_description)
             VALUES (?, ?, ?)
         """, (item_id, session["user_id"], details))
 
@@ -59,7 +63,7 @@ def submit_claim():
         return jsonify({
             "message": "Claim submitted successfully",
             "claim_id": result.lastrowid,
-            "status": "Pending"
+            "status": "pending"
         }), 201
 
     finally:
@@ -76,9 +80,13 @@ def view_claims():
     db = get_db()
 
     try:
-        claims = db.execute(
-            "SELECT * FROM claims ORDER BY created_at DESC"
-        ).fetchall()
+        claims = db.execute("""
+            SELECT claims.*, users.name, items.item_name
+            FROM claims
+            JOIN users ON claims.user_id = users.id
+            JOIN items ON claims.item_id = items.id
+            ORDER BY claims.created_at DESC
+        """).fetchall()
 
         return jsonify([dict(c) for c in claims])
 
@@ -98,10 +106,9 @@ def update_claim(claim_id):
 
     data = request.get_json(silent=True) or {}
 
-    status = data.get("status")
-    remarks = data.get("remarks", "")
+    status = data.get("status", "").lower()
 
-    if status not in ["Approved", "Rejected"]:
+    if status not in ["approved", "rejected"]:
         return jsonify({"error": "Invalid status"}), 400
 
     db = get_db()
@@ -115,16 +122,38 @@ def update_claim(claim_id):
         if not claim:
             return jsonify({"error": "Claim not found"}), 404
 
-        if claim["status"] != "Pending":
+        if claim["status"].lower() != "pending":
             return jsonify({"error": "Claim already reviewed"}), 409
+
+        if status == "approved":
+
+            item = db.execute(
+                "SELECT status FROM items WHERE id = ?",
+                (claim["item_id"],)
+            ).fetchone()
+
+            if not item or item["status"].lower() != "active":
+                return jsonify({"error": "Item is not available"}), 409
+
+            other_approved = db.execute("""
+                SELECT id FROM claims
+                WHERE item_id = ?
+                AND status = 'approved'
+                AND id != ?
+            """, (claim["item_id"], claim_id)).fetchone()
+
+            if other_approved:
+                return jsonify({
+                    "error": "Another claim is already approved"
+                }), 409
 
         db.execute("""
             UPDATE claims
-            SET status = ?, admin_remarks = ?
+            SET status = ?
             WHERE id = ?
-        """, (status, remarks, claim_id))
+        """, (status, claim_id))
 
-        message = f"Your claim has been {status.lower()}."
+        message = f"Your claim has been {status}."
 
         db.execute("""
             INSERT INTO notifications (user_id, message)
@@ -188,7 +217,9 @@ def mark_notification_read(notification_id):
         if result.rowcount == 0:
             return jsonify({"error": "Notification not found"}), 404
 
-        return jsonify({"message": "Notification marked as read"})
+        return jsonify({
+            "message": "Notification marked as read"
+        })
 
     finally:
         db.close()
@@ -215,15 +246,23 @@ def complete_recovery(claim_id):
         if not claim:
             return jsonify({"error": "Claim not found"}), 404
 
-        if claim["status"] != "Approved":
+        if claim["status"].lower() != "approved":
             return jsonify({
                 "error": "Claim must be approved first"
             }), 400
 
+        item = db.execute(
+            "SELECT status FROM items WHERE id = ?",
+            (claim["item_id"],)
+        ).fetchone()
+
+        if not item or item["status"].lower() == "recovered":
+            return jsonify({"error": "Item already recovered"}), 409
+
         db.execute("""
             INSERT INTO recovery_history
-            (item_id, claimant_id, admin_id, recovery_status)
-            VALUES (?, ?, ?, 'Recovered')
+            (item_id, claimant_id, admin_id)
+            VALUES (?, ?, ?)
         """, (
             claim["item_id"],
             claim["user_id"],
@@ -232,7 +271,7 @@ def complete_recovery(claim_id):
 
         db.execute("""
             UPDATE items
-            SET status = 'Recovered'
+            SET status = 'recovered'
             WHERE id = ?
         """, (claim["item_id"],))
 
@@ -246,7 +285,9 @@ def complete_recovery(claim_id):
 
         db.commit()
 
-        return jsonify({"message": "Item recovered successfully"})
+        return jsonify({
+            "message": "Item recovered successfully"
+        })
 
     finally:
         db.close()
